@@ -13,6 +13,7 @@ public class Currently {
     private double precipChance;
     private String summary;
     private String timeZone;
+    private boolean isHot;
 
     public Currently() {
     }
@@ -64,7 +65,13 @@ public class Currently {
     }
 
     public int getTemperature() {
-        return (int) Math.round(this.temperature);
+        int temp = (int) Math.round(this.temperature);
+        if (temp > 60) {
+            isHot = true;
+        } else {
+            isHot = false;
+        }
+        return temp;
     }
 
     public void setTemperature(double temperature) {
@@ -101,5 +108,9 @@ public class Currently {
 
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
+    }
+
+    public boolean isHot() {
+        return isHot;
     }
 }

@@ -1,8 +1,12 @@
 package com.affogatostudios.stormywithfragments.ui;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -37,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
     public static final String KEY_CURRENTLY_BUNDLE = "key_currently_bundle";
     public static final String KEY_HOURLY_BUNDLE = "key_hourly_bundle";
     public static final String KEY_DAILY_BUNDLE = "key_daily_bundle";
+    public static final String KEY_VIEWPAGER_BUNDLE = "key_viewpager_bundle";
+    public static final String KEY_DUALPANE_BUNDLE = "key_dualpane_bundle";
 
     private Forecast forecast;
     private Currently displayWeather;
@@ -52,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
     private Bundle currentlyBundle;
     private Bundle hourlyBundle;
     private Bundle dailyBundle;
+    private Bundle viewPagerBundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +68,8 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
         dailyBundle = new Bundle();
         currentlyBundle = new Bundle();
         hourlyBundle = new Bundle();
+        viewPagerBundle = new Bundle();
+
         forecast = new Forecast();
 
         fragmentManager = getSupportFragmentManager();
@@ -76,8 +85,9 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
         super.onSaveInstanceState(outState);
 
         outState.putBundle(KEY_CURRENTLY_BUNDLE, currentlyBundle);
-        outState.putBundle(KEY_HOURLY_BUNDLE, hourlyBundle);
-        outState.putBundle(KEY_DAILY_BUNDLE, dailyBundle);
+        // outState.putBundle(KEY_HOURLY_BUNDLE, hourlyBundle);
+        // outState.putBundle(KEY_DAILY_BUNDLE, dailyBundle);
+        outState.putBundle(KEY_VIEWPAGER_BUNDLE, viewPagerBundle);
     }
 
     @Override
@@ -85,8 +95,9 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
         super.onRestoreInstanceState(savedInstanceState);
 
         currentlyBundle = savedInstanceState.getBundle(KEY_CURRENTLY_BUNDLE);
-        hourlyBundle = savedInstanceState.getBundle(KEY_HOURLY_BUNDLE);
-        dailyBundle = savedInstanceState.getBundle(KEY_DAILY_BUNDLE);
+        // hourlyBundle = savedInstanceState.getBundle(KEY_HOURLY_BUNDLE);
+        // dailyBundle = savedInstanceState.getBundle(KEY_DAILY_BUNDLE);
+        viewPagerBundle = savedInstanceState.getBundle(KEY_VIEWPAGER_BUNDLE);
     }
 
     private void getForecast(double latitude, double longitude) {
@@ -154,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
             currentlyBundle.putDouble(CurrentlyFragment.KEY_PRECIP_CHANCE, displayWeather.getPrecipChance());
             currentlyBundle.putString(CurrentlyFragment.KEY_SUMMARY, displayWeather.getSummary());
             currentlyBundle.putBoolean(CurrentlyFragment.KEY_IS_TABLET, isTablet);
+            currentlyBundle.putBoolean(CurrentlyFragment.KEY_IS_HOT, displayWeather.isHot());
             currentlyFragment.setArguments(currentlyBundle);
             fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.add(R.id.placeHolder, currentlyFragment, CurrentlyFragment.KEY_CURRENTLY_FRAGMENT);
@@ -276,27 +288,62 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
         List<Hour> hours = Arrays.asList(forecast.getHourlyForecast());
         List<Day> days = Arrays.asList(forecast.getDailyForecast());
         hourlyBundle.putSerializable(HourlyFragment.KEY_HOURLY_FORECAST, (Serializable) hours);
+        hourlyBundle.putBoolean(HourlyFragment.KEY_IS_HOT, isAverageHot(calculateAverageTemperatureHour(hours)));
         dailyBundle.putSerializable(DailyFragment.KEY_DAILY_FORECAST, (Serializable) days);
-        Bundle bundle = new Bundle();
-        bundle.putBundle("key_hourly_bundle", hourlyBundle);
-        bundle.putBundle("key_daily_bundle", dailyBundle);
+        dailyBundle.putBoolean(DailyFragment.KEY_IS_HOT, isAverageHot(calculateAverageTemperatureDays(days)));
+        // viewPagerBundle = new Bundle();
+        viewPagerBundle.putBundle("key_hourly_bundle", hourlyBundle);
+        viewPagerBundle.putBundle("key_daily_bundle", dailyBundle);
 
-        ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
-        viewPagerFragment.setArguments(bundle);
-        fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.placeHolder, viewPagerFragment, ViewPagerFragment.KEY_VIEWPAGER_FRAGMENT);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-        /*
-        DualPaneFragment savedFragment = (DualPaneFragment) getSupportFragmentManager().findFragmentByTag(DualPaneFragment.KEY_DUALPANE_FRAGMENT);
-        if (savedFragment == null) {
+        if (!isTablet) {
+            ViewPagerFragment savedViewPagerFragment = (ViewPagerFragment) getSupportFragmentManager().findFragmentByTag(ViewPagerFragment.KEY_VIEWPAGER_FRAGMENT);
 
-            DualPaneFragment dualPaneFragment = new DualPaneFragment();
-            fragmentTransaction = fragmentManager.beginTransaction();
-            fragmentTransaction.replace(R.id.placeHolder, dualPaneFragment, DualPaneFragment.KEY_DUALPANE_FRAGMENT);
-            fragmentTransaction.addToBackStack(null);
-            fragmentTransaction.commit();
+            if (savedViewPagerFragment == null) {
+                ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
+                viewPagerFragment.setArguments(viewPagerBundle);
+                fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.placeHolder, viewPagerFragment, ViewPagerFragment.KEY_VIEWPAGER_FRAGMENT);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+            }
+        } else {
+            DualPaneFragment savedDualPaneFragment = (DualPaneFragment) getSupportFragmentManager().findFragmentByTag(DualPaneFragment.KEY_DUALPANE_FRAGMENT);
+
+            if (savedDualPaneFragment == null) {
+                DualPaneFragment dualPaneFragment = new DualPaneFragment();
+                dualPaneFragment.setArguments(viewPagerBundle);
+                fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.placeHolder, dualPaneFragment, DualPaneFragment.KEY_DUALPANE_FRAGMENT);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
+            }
         }
-        */
+    }
+
+    public int calculateAverageTemperatureHour(List<Hour> list) {
+        int average = 0;
+        for (int i = 0; i < list.size(); i++) {
+            average += list.get(i).getFormattedTemperature();
+        }
+        return average / list.size();
+    }
+
+    public int calculateAverageTemperatureDays(List<Day> list) {
+        int average = 0;
+        for (int i = 0; i < list.size(); i++) {
+            average += list.get(i).getFormattedTemperatureLow();
+        }
+        return average / list.size();
+    }
+
+    public boolean isAverageHot(int averageTemperature) {
+        return averageTemperature > 60 ? true : false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Toast.makeText(this, "Restoring from Insance State...", Toast.LENGTH_SHORT).show();
     }
 }

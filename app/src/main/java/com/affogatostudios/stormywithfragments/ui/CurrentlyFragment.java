@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ public class CurrentlyFragment extends Fragment {
     public static final String KEY_SUMMARY = "key_summary";
     public static final String KEY_TIME_ZONE = "key_time_zone";
     public static final String KEY_IS_TABLET = "key_is_tablet";
+    public static final String KEY_IS_HOT = "key_is_hot";
 
     private TextView temperatureValue;
     private TextView timeValue;
@@ -37,11 +39,11 @@ public class CurrentlyFragment extends Fragment {
 
     private ImageView iconImageView;
 
-    private Button hourlyButton;
-    private Button dailyButton;
     private Button detailsButton;
 
     private ImageButton refreshButton;
+
+    private ConstraintLayout currentlyLayout;
 
     public interface OnHourlyForecastButtonSelected {
         void onButtonClicked(int fragment);
@@ -65,31 +67,6 @@ public class CurrentlyFragment extends Fragment {
         initViews(view);
 
         boolean isTablet = getArguments().getBoolean(KEY_IS_TABLET);
-        if (isTablet) {
-            hourlyButton.setVisibility(View.INVISIBLE);
-            dailyButton.setVisibility(View.INVISIBLE);
-            detailsButton.setVisibility(View.VISIBLE);
-        } else {
-            hourlyButton.setVisibility(View.VISIBLE);
-            dailyButton.setVisibility(View.VISIBLE);
-            detailsButton.setVisibility(View.INVISIBLE);
-        }
-
-        hourlyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "Hourly button clicked", Toast.LENGTH_SHORT).show();
-                listener.onButtonClicked(1);
-            }
-        });
-
-        dailyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(getActivity(), "Weekly button clicked", Toast.LENGTH_SHORT).show();
-                listener.onButtonClicked(2);
-            }
-        });
 
         detailsButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,10 +95,9 @@ public class CurrentlyFragment extends Fragment {
         precipValue = view.findViewById(R.id.precipValue);
         summaryValue = view.findViewById(R.id.summaryValue);
         iconImageView = view.findViewById(R.id.iconImageView);
-        hourlyButton = view.findViewById(R.id.hourlyButton);
-        dailyButton = view.findViewById(R.id.weeklyButton);
         detailsButton = view.findViewById(R.id.detailsButton);
         refreshButton = view.findViewById(R.id.refreshButton);
+        currentlyLayout = view.findViewById(R.id.currentlyLayout);
     }
 
     private void setDisplayWeather() {
@@ -139,5 +115,10 @@ public class CurrentlyFragment extends Fragment {
         humidityValue.setText(humidity + "");
         precipValue.setText(precip + "%");
         summaryValue.setText(summary);
+        if (getArguments().getBoolean(KEY_IS_HOT)) {
+            currentlyLayout.setBackgroundResource(R.drawable.background_gradient_hot);
+        } else {
+            currentlyLayout.setBackgroundResource(R.drawable.background_gradient_cold);
+        }
     }
 }

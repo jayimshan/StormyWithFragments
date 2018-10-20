@@ -52,7 +52,7 @@ public class DailyAdapter extends RecyclerView.Adapter {
         }
 
         public void bindView(Day day) {
-            temperatureLowLabel.setText(day.getFormattedTemperatureHigh() + "");
+            temperatureLowLabel.setText(day.getFormattedTemperatureLow() + "");
             temperatureHighLabel.setText(day.getFormattedTemperatureHigh() + "");
             iconImageView.setImageResource(day.getIcon());
             dayLabel.setText(day.getFormattedTime());

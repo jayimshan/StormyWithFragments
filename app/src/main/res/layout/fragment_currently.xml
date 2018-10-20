@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/currentlyLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimaryDark"
@@ -164,38 +165,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
-        android:id="@+id/hourlyButton"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="#40ffffff"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:text="HOURLY FORECAST"
-        android:textColor="@android:color/white"
-        app:layout_constraintBottom_toTopOf="@+id/darkSkyAttribution"
-        app:layout_constraintEnd_toStartOf="@+id/weeklyButton"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/summaryValue" />
-
-    <Button
-        android:id="@+id/weeklyButton"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:background="#40ffffff"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:text="WEEKLY FORECAST"
-        android:textColor="@android:color/white"
-        app:layout_constraintBottom_toTopOf="@+id/darkSkyAttribution"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/hourlyButton"
-        app:layout_constraintTop_toBottomOf="@+id/summaryValue" />
-
     <ImageButton
         android:id="@+id/refreshButton"
         android:layout_width="wrap_content"
@@ -204,7 +173,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:background="@color/colorPrimaryDark"
+        android:background="@android:color/transparent"
         app:layout_constraintBottom_toTopOf="@+id/locationValue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -215,15 +184,17 @@
         android:id="@+id/detailsButton"
         android:layout_width="wrap_content"
         android:layout_height="30dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:background="#40ffffff"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
         android:text="VIEW DETAILS"
         android:textColor="@android:color/white"
         app:layout_constraintBottom_toTopOf="@+id/darkSkyAttribution"
-        app:layout_constraintEnd_toStartOf="@+id/weeklyButton"
-        app:layout_constraintStart_toEndOf="@+id/hourlyButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/summaryValue" />
 
 
