@@ -20,26 +20,33 @@ import com.affogatostudios.stormywithfragments.model.Day;
 import java.util.List;
 
 public class DailyFragment extends Fragment {
-    public static final String KEY_DAILY_FORECAST = "key_daily_forecast";
     public static final String KEY_DAILY_FRAGMENT = "key_daily_fragment";
     public static final String KEY_IS_HOT = "key_is_hot";
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Toast.makeText(getActivity(), "Daily Fragment", Toast.LENGTH_SHORT).show();
+
+        List<Day> days = (List<Day>) getArguments().getSerializable(MainActivity.KEY_DAILY_FORECAST);
         View view = inflater.inflate(R.layout.fragment_daily, container, false);
-        List<Day> days = (List<Day>) getArguments().getSerializable(KEY_DAILY_FORECAST);
+
         RecyclerView dailyRecyclerView = view.findViewById(R.id.dailyRecyclerView);
+        /*
         RelativeLayout relativeLayout = view.findViewById(R.id.dailyLayout);
         if (getArguments().getBoolean(KEY_IS_HOT)) {
             relativeLayout.setBackgroundResource(R.drawable.background_gradient_hot);
         } else {
             relativeLayout.setBackgroundResource(R.drawable.background_gradient_cold);
         }
+        */
         dailyRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
         DailyAdapter adapter = new DailyAdapter(days);
         dailyRecyclerView.setAdapter(adapter);
         dailyRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 }

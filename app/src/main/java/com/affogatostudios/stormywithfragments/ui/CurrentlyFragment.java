@@ -45,10 +45,6 @@ public class CurrentlyFragment extends Fragment {
 
     private ConstraintLayout currentlyLayout;
 
-    public interface OnHourlyForecastButtonSelected {
-        void onButtonClicked(int fragment);
-    }
-
     public interface OnRefreshForecastButtonSelected {
         void onRefreshClicked();
     }
@@ -60,13 +56,12 @@ public class CurrentlyFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        final OnHourlyForecastButtonSelected listener = (OnHourlyForecastButtonSelected) getActivity();
         final OnRefreshForecastButtonSelected refreshListener = (OnRefreshForecastButtonSelected) getActivity();
         final OnDetailsButtonSelected detailListener = (OnDetailsButtonSelected) getActivity();
         View view = inflater.inflate(R.layout.fragment_currently, container, false);
         initViews(view);
 
-        boolean isTablet = getArguments().getBoolean(KEY_IS_TABLET);
+        // boolean isTablet = getArguments().getBoolean(KEY_IS_TABLET);
 
         detailsButton.setOnClickListener(new View.OnClickListener() {
             @Override

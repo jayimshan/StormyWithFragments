@@ -1,12 +1,8 @@
 package com.affogatostudios.stormywithfragments.ui;
 
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +20,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,16 +30,19 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements CurrentlyFragment.OnHourlyForecastButtonSelected,
-        CurrentlyFragment.OnRefreshForecastButtonSelected,
+public class MainActivity extends AppCompatActivity implements CurrentlyFragment.OnRefreshForecastButtonSelected,
         CurrentlyFragment.OnDetailsButtonSelected {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String KEY_CURRENTLY_BUNDLE = "key_currently_bundle";
+    public static final String KEY_HOURLY_FORECAST = "key_hourly_forecast";
+    public static final String KEY_DAILY_FORECAST = "key_daily_forecast";
     public static final String KEY_HOURLY_BUNDLE = "key_hourly_bundle";
     public static final String KEY_DAILY_BUNDLE = "key_daily_bundle";
-    public static final String KEY_VIEWPAGER_BUNDLE = "key_viewpager_bundle";
-    public static final String KEY_DUALPANE_BUNDLE = "key_dualpane_bundle";
+    public static final String KEY_BUNDLE = "key_dualpane_bundle";
+    public static final int KEY_FRAGMENT_CURRENT = 0;
+    public static final int KEY_FRAGMENT_VIEWPAGER = 1;
+    public static final int KEY_FRAGMENT_DUALPANE = 2;
 
     private Forecast forecast;
     private Currently displayWeather;
@@ -51,53 +51,34 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
     final double longitude = -122.4233;
     private boolean isTablet;
 
-    private CurrentlyFragment savedCurrentlyFragment;
-    private FragmentManager fragmentManager;
-    private FragmentTransaction fragmentTransaction;
+    private List<Hour> hours;
+    private List<Day> days;
 
-    private Bundle currentlyBundle;
-    private Bundle hourlyBundle;
-    private Bundle dailyBundle;
-    private Bundle viewPagerBundle;
+    CurrentlyFragment currentlyFragment;
+    ViewPagerFragment viewPagerFragment;
+
+    private int fragment = KEY_FRAGMENT_CURRENT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        dailyBundle = new Bundle();
-        currentlyBundle = new Bundle();
-        hourlyBundle = new Bundle();
-        viewPagerBundle = new Bundle();
-
         forecast = new Forecast();
 
-        fragmentManager = getSupportFragmentManager();
-
         isTablet = getResources().getBoolean(R.bool.is_tablet);
-        savedCurrentlyFragment = (CurrentlyFragment) getSupportFragmentManager().findFragmentByTag(CurrentlyFragment.KEY_CURRENTLY_FRAGMENT);
 
+        currentlyFragment = (CurrentlyFragment) getSupportFragmentManager().findFragmentByTag(CurrentlyFragment.KEY_CURRENTLY_FRAGMENT);
+        
         getForecast(latitude, longitude);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+
+        outState.putSerializable(KEY_DAILY_FORECAST, (Serializable) hours);
+        outState.putSerializable(KEY_HOURLY_FORECAST, (Serializable) days);
         super.onSaveInstanceState(outState);
-
-        outState.putBundle(KEY_CURRENTLY_BUNDLE, currentlyBundle);
-        // outState.putBundle(KEY_HOURLY_BUNDLE, hourlyBundle);
-        // outState.putBundle(KEY_DAILY_BUNDLE, dailyBundle);
-        outState.putBundle(KEY_VIEWPAGER_BUNDLE, viewPagerBundle);
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-
-        currentlyBundle = savedInstanceState.getBundle(KEY_CURRENTLY_BUNDLE);
-        // hourlyBundle = savedInstanceState.getBundle(KEY_HOURLY_BUNDLE);
-        // dailyBundle = savedInstanceState.getBundle(KEY_DAILY_BUNDLE);
-        viewPagerBundle = savedInstanceState.getBundle(KEY_VIEWPAGER_BUNDLE);
     }
 
     private void getForecast(double latitude, double longitude) {
@@ -137,7 +118,9 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                startCurrentlyFragment(savedCurrentlyFragment);
+                                hours = Arrays.asList(forecast.getHourlyForecast());
+                                days = Arrays.asList(forecast.getDailyForecast());
+                                startCurrentlyFragment(currentlyFragment);
                             }
                         });
                     } else {
@@ -154,20 +137,21 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
 
     private void startCurrentlyFragment(CurrentlyFragment savedFragment) {
 
+        fragment = KEY_FRAGMENT_CURRENT;
         if (savedFragment == null) {
             CurrentlyFragment currentlyFragment = new CurrentlyFragment();
-            // FragmentManager fragmentManager = getSupportFragmentManager();
-            // currentlyBundle = new Bundle();
-            currentlyBundle.putInt(CurrentlyFragment.KEY_ICON, displayWeather.getIconId());
-            currentlyBundle.putString(CurrentlyFragment.KEY_TIME, displayWeather.getFormattedTime());
-            currentlyBundle.putInt(CurrentlyFragment.KEY_TEMPERATURE, displayWeather.getTemperature());
-            currentlyBundle.putDouble(CurrentlyFragment.KEY_HUMIDITY, displayWeather.getHumidty());
-            currentlyBundle.putDouble(CurrentlyFragment.KEY_PRECIP_CHANCE, displayWeather.getPrecipChance());
-            currentlyBundle.putString(CurrentlyFragment.KEY_SUMMARY, displayWeather.getSummary());
-            currentlyBundle.putBoolean(CurrentlyFragment.KEY_IS_TABLET, isTablet);
-            currentlyBundle.putBoolean(CurrentlyFragment.KEY_IS_HOT, displayWeather.isHot());
-            currentlyFragment.setArguments(currentlyBundle);
-            fragmentTransaction = fragmentManager.beginTransaction();
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            Bundle bundle = new Bundle();
+            bundle.putInt(CurrentlyFragment.KEY_ICON, displayWeather.getIconId());
+            bundle.putString(CurrentlyFragment.KEY_TIME, displayWeather.getFormattedTime());
+            bundle.putInt(CurrentlyFragment.KEY_TEMPERATURE, displayWeather.getTemperature());
+            bundle.putDouble(CurrentlyFragment.KEY_HUMIDITY, displayWeather.getHumidty());
+            bundle.putDouble(CurrentlyFragment.KEY_PRECIP_CHANCE, displayWeather.getPrecipChance());
+            bundle.putString(CurrentlyFragment.KEY_SUMMARY, displayWeather.getSummary());
+            bundle.putBoolean(CurrentlyFragment.KEY_IS_TABLET, isTablet);
+            bundle.putBoolean(CurrentlyFragment.KEY_IS_HOT, displayWeather.isHot());
+            currentlyFragment.setArguments(bundle);
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.add(R.id.placeHolder, currentlyFragment, CurrentlyFragment.KEY_CURRENTLY_FRAGMENT);
             fragmentTransaction.commit();
         }
@@ -255,68 +239,26 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
     }
 
     @Override
-    public void onButtonClicked(int fragment) {
-        if (fragment == 1) {
-            HourlyFragment savedFragment = (HourlyFragment) getSupportFragmentManager().findFragmentByTag(HourlyFragment.KEY_HOURLY_FRAGMENT);
-            if (savedFragment == null) {
-                List<Hour> hours = Arrays.asList(forecast.getHourlyForecast());
-                HourlyFragment hourlyFragment = new HourlyFragment();
-                hourlyBundle.putSerializable(HourlyFragment.KEY_HOURLY_FORECAST, (Serializable) hours);
-                hourlyFragment.setArguments(hourlyBundle);
-                fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.placeHolder, hourlyFragment, HourlyFragment.KEY_HOURLY_FRAGMENT);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
-        } else {
-            DailyFragment savedFragment = (DailyFragment) getSupportFragmentManager().findFragmentByTag(DailyFragment.KEY_DAILY_FRAGMENT);
-            if (savedFragment == null) {
-                List<Day> days = Arrays.asList(forecast.getDailyForecast());
-                DailyFragment dailyFragment = new DailyFragment();
-                dailyBundle.putSerializable(DailyFragment.KEY_DAILY_FORECAST, (Serializable) days);
-                dailyFragment.setArguments(dailyBundle);
-                fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.placeHolder, dailyFragment, DailyFragment.KEY_DAILY_FRAGMENT);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
-        }
-    }
-
-    @Override
     public void onDetailsClicked() {
-        List<Hour> hours = Arrays.asList(forecast.getHourlyForecast());
-        List<Day> days = Arrays.asList(forecast.getDailyForecast());
-        hourlyBundle.putSerializable(HourlyFragment.KEY_HOURLY_FORECAST, (Serializable) hours);
-        hourlyBundle.putBoolean(HourlyFragment.KEY_IS_HOT, isAverageHot(calculateAverageTemperatureHour(hours)));
-        dailyBundle.putSerializable(DailyFragment.KEY_DAILY_FORECAST, (Serializable) days);
-        dailyBundle.putBoolean(DailyFragment.KEY_IS_HOT, isAverageHot(calculateAverageTemperatureDays(days)));
-        // viewPagerBundle = new Bundle();
-        viewPagerBundle.putBundle("key_hourly_bundle", hourlyBundle);
-        viewPagerBundle.putBundle("key_daily_bundle", dailyBundle);
 
+        fragment = KEY_FRAGMENT_VIEWPAGER;
         if (!isTablet) {
-            ViewPagerFragment savedViewPagerFragment = (ViewPagerFragment) getSupportFragmentManager().findFragmentByTag(ViewPagerFragment.KEY_VIEWPAGER_FRAGMENT);
 
-            if (savedViewPagerFragment == null) {
-                ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
-                viewPagerFragment.setArguments(viewPagerBundle);
-                fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.placeHolder, viewPagerFragment, ViewPagerFragment.KEY_VIEWPAGER_FRAGMENT);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
-        } else {
-            DualPaneFragment savedDualPaneFragment = (DualPaneFragment) getSupportFragmentManager().findFragmentByTag(DualPaneFragment.KEY_DUALPANE_FRAGMENT);
+            // hours = Arrays.asList(forecast.getHourlyForecast());
+            // days = Arrays.asList(forecast.getDailyForecast());
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(KEY_HOURLY_FORECAST, (Serializable) hours);
+            // hourlyBundle.putBoolean(HourlyFragment.KEY_IS_HOT, isAverageHot(calculateAverageTemperatureHour(hours)));
+            bundle.putSerializable(KEY_DAILY_FORECAST, (Serializable) days);
+            // dailyBundle.putBoolean(DailyFragment.KEY_IS_HOT, isAverageHot(calculateAverageTemperatureDays(days)));
 
-            if (savedDualPaneFragment == null) {
-                DualPaneFragment dualPaneFragment = new DualPaneFragment();
-                dualPaneFragment.setArguments(viewPagerBundle);
-                fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.placeHolder, dualPaneFragment, DualPaneFragment.KEY_DUALPANE_FRAGMENT);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
+            ViewPagerFragment viewPagerFragment = new ViewPagerFragment();
+            viewPagerFragment.setArguments(bundle);
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.placeHolder, viewPagerFragment, ViewPagerFragment.KEY_VIEWPAGER_FRAGMENT);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
         }
     }
 
@@ -337,13 +279,11 @@ public class MainActivity extends AppCompatActivity implements CurrentlyFragment
     }
 
     public boolean isAverageHot(int averageTemperature) {
-        return averageTemperature > 60 ? true : false;
+        return averageTemperature > 40 ? true : false;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        Toast.makeText(this, "Restoring from Insance State...", Toast.LENGTH_SHORT).show();
     }
 }
