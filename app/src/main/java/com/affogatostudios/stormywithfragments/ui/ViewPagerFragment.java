@@ -29,18 +29,7 @@ public class ViewPagerFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        /*
-        if (savedInstanceState != null && savedInstanceState.getSerializable(MainActivity.KEY_HOURLY_FORECAST) != null) {
-            hours = (List<Hour>) savedInstanceState.getSerializable(MainActivity.KEY_HOURLY_FORECAST);
-        } else {
-            hours = (List<Hour>) getArguments().getSerializable(MainActivity.KEY_HOURLY_FORECAST);
-        }
-        if (savedInstanceState != null && savedInstanceState.getSerializable(MainActivity.KEY_DAILY_FORECAST) != null) {
-            days = (List<Day>) savedInstanceState.getSerializable(MainActivity.KEY_DAILY_FORECAST);
-        } else {
-            days = (List<Day>) getArguments().getSerializable(MainActivity.KEY_DAILY_FORECAST);
-        }
-        */
+
         List<Hour> hours = (List<Hour>) getArguments().getSerializable(MainActivity.KEY_HOURLY_FORECAST);
         List<Day> days = (List<Day>) getArguments().getSerializable(MainActivity.KEY_DAILY_FORECAST);
 
@@ -75,7 +64,7 @@ public class ViewPagerFragment extends Fragment {
         });
 
         TabLayout tabLayout = view.findViewById(R.id.tabLayout);
-        // tabLayout.setBackgroundResource(R.color.colorPrimaryDark);
+        tabLayout.setBackgroundColor(Color.TRANSPARENT);
         tabLayout.setupWithViewPager(viewPager);
 
         return view;
@@ -83,9 +72,6 @@ public class ViewPagerFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-
-        // outState.putSerializable(MainActivity.KEY_HOURLY_FORECAST, (Serializable) hours);
-        // outState.putSerializable(MainActivity.KEY_DAILY_FORECAST, (Serializable) days);
         super.onSaveInstanceState(outState);
     }
 }

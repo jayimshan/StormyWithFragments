@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    tools:background="@color/colorPrimaryDark">
+
+    <TextView
+        android:id="@+id/dayLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/iconImageView"
+        android:layout_toEndOf="@+id/iconImageView"
+        android:paddingLeft="8dp"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        android:text="TextView" />
+
+    <ImageView
+        android:id="@+id/iconImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:paddingLeft="8dp"
+        android:layout_toRightOf="@+id/temperatureLowLabel"
+        android:layout_toEndOf="@+id/temperatureLowLabel"
+        app:srcCompat="@drawable/clear_day" />
+
+    <TextView
+        android:id="@+id/temperatureLowLabel"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/lowLabel"
+        android:paddingLeft="8dp"
+        android:textColor="@android:color/white"
+        android:textSize="36sp"
+        android:text="TextView"
+        tools:text="54"/>
+
+    <TextView
+        android:id="@+id/temperatureHighLabel"
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/highLabel"
+        android:textColor="@android:color/white"
+        android:textSize="36sp"
+        android:text="TextView"
+        tools:text="65"/>
+
+    <TextView
+        android:id="@+id/lowLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:paddingLeft="128dp"
+        android:text="Low"
+        android:textColor="@color/half_white"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/highLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:paddingRight="128dp"
+        android:text="High"
+        android:textColor="@color/half_white"
+        android:textSize="18sp" />
+</RelativeLayout>

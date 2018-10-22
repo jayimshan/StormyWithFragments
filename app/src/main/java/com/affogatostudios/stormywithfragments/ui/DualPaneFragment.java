@@ -10,33 +10,34 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.affogatostudios.stormywithfragments.R;
+import com.affogatostudios.stormywithfragments.model.Day;
+import com.affogatostudios.stormywithfragments.model.Hour;
+
+import java.io.Serializable;
+import java.util.List;
 
 public class DualPaneFragment extends Fragment {
     public static final String KEY_DUALPANE_FRAGMENT = "key_dualpane_fragment";
 
-    private Bundle hourlyBundle;
-    private Bundle dailyBundle;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        List<Hour> hours = (List<Hour>) getArguments().getSerializable(MainActivity.KEY_HOURLY_FORECAST);
+        List<Day> days = (List<Day>) getArguments().getSerializable(MainActivity.KEY_DAILY_FORECAST);
         View view = inflater.inflate(R.layout.fragment_dualpane, container, false);
 
         FragmentManager fragmentManager = getChildFragmentManager();
-        HourlyFragment hourlyFragment = (HourlyFragment) fragmentManager.findFragmentByTag(HourlyFragment.KEY_HOURLY_FRAGMENT);
-        if (hourlyFragment == null) {
-            hourlyFragment = new HourlyFragment();
-        }
-        hourlyBundle = getArguments().getBundle(MainActivity.KEY_HOURLY_BUNDLE);
-        hourlyFragment.setArguments(hourlyBundle);
+        HourlyFragment hourlyFragment = new HourlyFragment();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(MainActivity.KEY_HOURLY_FORECAST, (Serializable) hours);
+        hourlyFragment.setArguments(bundle);
         fragmentManager.beginTransaction().add(R.id.leftPlaceHolder, hourlyFragment, HourlyFragment.KEY_HOURLY_FRAGMENT).commit();
 
-        DailyFragment dailyFragment = (DailyFragment) fragmentManager.findFragmentByTag(DailyFragment.KEY_DAILY_FRAGMENT);
-        if (dailyFragment == null) {
-            dailyFragment = new DailyFragment();
-        }
-        dailyBundle = getArguments().getBundle(MainActivity.KEY_DAILY_BUNDLE);
-        dailyFragment.setArguments(dailyBundle);
+        DailyFragment dailyFragment = new DailyFragment();
+        bundle = new Bundle();
+        bundle.putSerializable(MainActivity.KEY_DAILY_FORECAST, (Serializable) days);
+        dailyFragment.setArguments(bundle);
         fragmentManager.beginTransaction().add(R.id.rightPlaceHolder, dailyFragment, DailyFragment.KEY_DAILY_FRAGMENT).commit();
 
         return view;
